@@ -1,0 +1,10 @@
+#!/bin/sh
+#echo $1 $2
+#echo DBPATH:~/$DBNAME
+if [ "$#" -ne 1 ]; then
+echo usage:
+echo loc string
+else
+locate -d $DBNAME $1 | grep -v .repo | grep -v .git | grep -v .svn
+fi
+

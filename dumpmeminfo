@@ -1,0 +1,50 @@
+#!/bin/bash
+
+#dump total used kernel
+adb shell dumpsys meminfo | grep "Used RAM" | awk -F "+" '{print $2}' | sed "s/K kernel.*//g" | \
+sed "s/,//g" | awk '{print "Used kernel:\t" $1/1024 "    " }'
+echo "-----------------------------------"
+
+#get /proc/meminfo kernel dynamic part
+adb shell cat /proc/meminfo | grep -E "Slab|KernelStack|PageTables|Shmem" | \
+awk '{str=sprintf("%-12s\t%8.2f   ", $1, $2/1024);print str}' 
+#{print $1 " \t "$2/1024 "   "}'
+
+#get vmalloc info
+adb shell cat /proc/vmallocinfo | grep -vE "ioremap|map_lowmem|vm_map_ram" | \
+awk -F' ' '{printf("%s \n", $2)}' | awk '{sum+=$1};END {str=sprintf("VmallocUsed: \t %7.2f   ", sum/1024/1024);print str}'
+
+echo ""
+echo ""
+adb shell cat /proc/vmallocinfo | grep -vE "ioremap|map_lowmem|vm_map_ram" | \
+awk -F' ' '{printf("%s \n", $2)}' | awk '{sum+=$1};END {str=sprintf("VmallocUsed: \t %7.2f MB", sum/1024/1024);print str}'
+echo "--------------------------------------"
+adb shell cat /proc/vmallocinfo | grep -vE "ioremap|map_lowmem|vm_map_ram" | grep "user" | \
+awk -F' ' '{printf("%s \n", $2)}' | awk '{sum+=$1};END {str=sprintf("VmallocUsed.user:                   \t %7.2f   ", sum/1024/1024);print str}' 
+adb shell cat /proc/vmallocinfo | grep -vE "ioremap|map_lowmem|vm_map_ram" | grep "vmap" | \
+awk -F' ' '{printf("%s \n", $2)}' | awk '{sum+=$1};END {str=sprintf("VmallocUsed.vmap:                   \t %7.2f   ", sum/1024/1024);print str}' 
+adb shell cat /proc/vmallocinfo | grep -vE "ioremap|map_lowmem|vm_map_ram" | grep "vmalloc" | \
+awk -F' ' '{printf("%s \n", $2)}' | awk '{sum+=$1};END {str=sprintf("VmallocUsed.vmalloc:                \t %7.2f   ", sum/1024/1024);print str}' 
+adb shell cat /proc/vmallocinfo | grep -vE "ioremap|map_lowmem|vm_map_ram" | grep "firmware_loading_store" | \
+awk -F' ' '{printf("%s \n", $2)}' | awk '{sum+=$1};END {str=sprintf("VmallocUsed.firmware_loading_store: \t %7.2f   ", sum/1024/1024);print str}' 
+
+
+
+echo ""
+echo "==================================="
+echo ""
+
+#get /proc/meminfo free part
+adb shell cat /proc/meminfo | grep -E "MemTotal|MemAvailable|MemFree|Buffers|\bCached\b"
+
+echo ""
+echo "-------------------"
+echo ""
+#get slabinfo
+adb shell cat /proc/slabinfo | awk -F' ' '{print $1"\t" $3*$4}' | awk '{str=sprintf("%-32s\t%8.0f", $1, $2);print str}'
+
+
+
+
+
+
